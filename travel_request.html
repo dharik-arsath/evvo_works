@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Request System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">My Travel Requests</h1>
+            <button id="new-request-btn"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300">
+                New Request
+            </button>
+        </div>
+
+        <!-- Requests List -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-700 uppercase text-sm leading-normal">
+                        <th class="py-3 px-6 text-left">Destination</th>
+                        <th class="py-3 px-6 text-left">Purpose</th>
+                        <th class="py-3 px-6 text-left">Start Date</th>
+                        <th class="py-3 px-6 text-left">End Date</th>
+                        <th class="py-3 px-6 text-center">Status</th>
+                        <th class="py-3 px-6 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="requests-table-body" class="text-gray-600 text-sm">
+                    <!-- Sample data - will be populated dynamically -->
+                </tbody>
+            </table>
+
+            <!-- Empty state -->
+            <div id="empty-state" class="hidden py-16 text-center">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-gray-500">No travel requests yet</h3>
+                <p class="text-gray-400 mt-2">Create your first travel request to get started</p>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between mt-4">
+            <div class="text-sm text-gray-500">
+                Showing <span id="showing-count">0</span> of <span id="total-count">0</span> requests
+            </div>
+            <div class="flex space-x-2">
+                <button id="prev-page"
+                    class="px-3 py-1 rounded border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Previous
+                </button>
+                <button id="next-page"
+                    class="px-3 py-1 rounded border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Next
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for New Request -->
+    <div id="request-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-black opacity-50" id="modal-overlay"></div>
+
+        <!-- Modal Content -->
+        <div class="bg-white rounded-lg shadow-xl z-10 w-full max-w-md mx-4 overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-lg font-bold text-gray-800">New Travel Request</h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Travel Request Form -->
+            <form id="travel-form" class="p-6">
+                <!-- Destination -->
+                <div class="mb-4">
+                    <label for="destination" class="block text-gray-700 text-sm font-bold mb-2">Destination</label>
+                    <input type="text" id="destination" name="destination" placeholder="Enter destination"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300 transition"
+                        required>
+                </div>
+
+                <!-- Purpose -->
+                <div class="mb-4">
+                    <label for="purpose" class="block text-gray-700 text-sm font-bold mb-2">Purpose</label>
+                    <textarea id="purpose" name="purpose" rows="3" placeholder="Enter purpose of travel"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300 transition"
+                        required></textarea>
+                </div>
+
+                <!-- Date Range -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="start_date" class="block text-gray-700 text-sm font-bold mb-2">Start Date</label>
+                        <input type="date" id="start_date" name="start_date"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300 transition"
+                            required>
+                    </div>
+                    <div>
+                        <label for="end_date" class="block text-gray-700 text-sm font-bold mb-2">End Date</label>
+                        <input type="date" id="end_date" name="end_date"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300 transition"
+                            required>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="button" id="cancel-btn"
+                        class="mr-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300">
+                        Submit Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let travelRequests = [];
+        document.addEventListener('DOMContentLoaded', function () {
+            const baseUrl = 'http://127.0.0.1:8000';
+            fetch(`${baseUrl}/api/travels/travel-requests/`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const results = data.results;
+                    console.log(results)
+                    if (results && results.length > 0) {
+                        travelRequests.push(...results);
+                        currentPage = 1;
+                        renderRequests();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching travel requests:', error);
+                });
+
+            function handleAction(requestId, action) {
+                const confirmation = confirm(`Are you sure you want to ${action} this request?`);
+                if (!confirmation) return;
+
+                // Show loading state (optional)
+                const buttons = document.querySelectorAll(`button[onclick*="${requestId}"]`);
+                buttons.forEach(button => button.disabled = true);
+
+                // Send request to server
+                fetch(`http://127.0.0.1:8000/api/travels/travel-requests/${requestId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    },
+                    body: JSON.stringify({ status: action === 'approve' ? 'Approved' : 'Rejected' }),
+                })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to update request');
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Update the UI to reflect the new status
+                        const statusElement = document.querySelector(`tr[data-id="${requestId}"] .status`);
+                        if (statusElement) {
+                            statusElement.textContent = data.status;
+                            statusElement.className = `py-1 px-3 rounded-full text-xs ${data.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                                    data.status === 'Rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                                }`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error ${action}ing request:`, error);
+                        alert(`Failed to ${action} request. Please try again.`);
+                    })
+                    .finally(() => {
+                        // Re-enable buttons
+                        buttons.forEach(button => button.disabled = false);
+                    });
+            }
+            // DOM elements
+            const requestsTableBody = document.getElementById('requests-table-body');
+            const emptyState = document.getElementById('empty-state');
+            const showingCount = document.getElementById('showing-count');
+            const totalCount = document.getElementById('total-count');
+            const prevPageBtn = document.getElementById('prev-page');
+            const nextPageBtn = document.getElementById('next-page');
+            const newRequestBtn = document.getElementById('new-request-btn');
+            const requestModal = document.getElementById('request-modal');
+            const modalOverlay = document.getElementById('modal-overlay');
+            const closeModalBtn = document.getElementById('close-modal');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const travelForm = document.getElementById('travel-form');
+            const signinBtn = document.getElementById('signin-btn');
+            const signupBtn = document.getElementById('signup-btn');
+            const signupForm = document.getElementById('signup-form');
+            const signinForm = document.getElementById('signin-form');
+            const signupMessage = document.getElementById('signup-message');
+            const signinMessage = document.getElementById('signin-message');
+
+            // Pagination variables
+            let currentPage = 1;
+            const itemsPerPage = 20;
+
+            // Initialize date inputs
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('start_date').setAttribute('min', today);
+            document.getElementById('end_date').setAttribute('min', today);
+
+            // Render travel requests
+            function renderRequests() {
+                // Clear table
+                requestsTableBody.innerHTML = '';
+
+                if (travelRequests.length === 0) {
+                    // Show empty state
+                    emptyState.classList.remove('hidden');
+                    showingCount.textContent = '0';
+                    totalCount.textContent = '0';
+                    prevPageBtn.disabled = true;
+                    nextPageBtn.disabled = true;
+                    return;
+                }
+
+                // Hide empty state
+                emptyState.classList.add('hidden');
+
+                // Calculate pagination
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = Math.min(start + itemsPerPage, travelRequests.length);
+                const paginatedRequests = travelRequests.slice(start, end);
+
+                // Update pagination info
+                showingCount.textContent = `${start + 1}-${end}`;
+                totalCount.textContent = travelRequests.length;
+                prevPageBtn.disabled = currentPage === 1;
+                nextPageBtn.disabled = end >= travelRequests.length;
+
+                // Render rows
+                paginatedRequests.forEach(request => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-200 hover:bg-gray-50';
+
+                    // Format dates
+                    const startDate = new Date(request.start_date).toLocaleDateString();
+                    const endDate = new Date(request.end_date).toLocaleDateString();
+
+                    // Status class
+                    let statusClass = '';
+                    if (request.status === 'Approved') {
+                        statusClass = 'bg-green-100 text-green-800';
+                    } else if (request.status === 'Rejected') {
+                        statusClass = 'bg-red-100 text-red-800';
+                    } else {
+                        statusClass = 'bg-yellow-100 text-yellow-800';
+                    }
+
+                    row.innerHTML = `
+            <td class="py-3 px-6 text-left">${request.destination}</td>
+            <td class="py-3 px-6 text-left">${request.purpose}</td>
+            <td class="py-3 px-6 text-left">${startDate}</td>
+            <td class="py-3 px-6 text-left">${endDate}</td>
+            <td class="py-3 px-6 text-center">
+              <span class="py-1 px-3 rounded-full text-xs ${statusClass}">
+                ${request.status}
+              </span>
+            </td>
+
+
+            <td class="py-3 px-6 text-center">
+              <button class="text-blue-600 hover:text-blue-900 mx-1" onclick="viewRequest(${request.id})">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+              </button>
+            </td>
+          `;
+
+                    requestsTableBody.appendChild(row);
+                });
+            }
+
+            // Initialize the view
+            renderRequests();
+
+            // Pagination event listeners
+            prevPageBtn.addEventListener('click', function () {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderRequests();
+                }
+            });
+
+            nextPageBtn.addEventListener('click', function () {
+                if (currentPage * itemsPerPage < travelRequests.length) {
+                    currentPage++;
+                    renderRequests();
+                }
+            });
+
+            // Modal functions
+            function openModal() {
+                requestModal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+
+            function closeModal() {
+                requestModal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                travelForm.reset();
+            }
+
+            // Modal event listeners
+            newRequestBtn.addEventListener('click', openModal);
+            closeModalBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', closeModal);
+
+            // Validate date ranges
+            document.getElementById('end_date').addEventListener('change', function () {
+                const startDate = document.getElementById('start_date').value;
+                const endDate = this.value;
+
+                if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+                    alert('End date cannot be before start date');
+                    this.value = '';
+                }
+            });
+
+
+            // Also update the form submission to post new requests
+            travelForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // Get form data
+                const newRequest = {
+                    destination: document.getElementById('destination').value,
+                    purpose: document.getElementById('purpose').value,
+                    start_date: document.getElementById('start_date').value,
+                    end_date: document.getElementById('end_date').value
+                };
+
+                // Show loading state on button
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = 'Submitting...';
+
+                // Send request to server
+                fetch(baseUrl + '/api/travels/travel-requests/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    },
+                    body: JSON.stringify(newRequest)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Close modal
+                        closeModal();
+
+                        // Refresh the list to include the new request
+                        renderRequests();
+                    })
+                    .catch(error => {
+                        console.error('Error creating travel request:', error);
+                        alert('Failed to create travel request. Please try again.');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>
