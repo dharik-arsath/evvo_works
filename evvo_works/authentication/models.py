@@ -49,7 +49,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
 
 
-    objects = UserManager()  # Use the custom UserManager
+    objects = UserManager() 
 
 
     USERNAME_FIELD = 'email'

@@ -11,7 +11,6 @@ class TravelRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Allow only the user to view their own travel requests
         user = self.request.user
         if user.is_admin():
             return TravelRequest.objects.all().order_by('-created_at')
@@ -20,8 +19,8 @@ class TravelRequestViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['update', 'partial_update']:
-            return [IsAdminUser()]  # Only admins can update status
-        return [IsAuthenticated()]  # Authenticated users can list/create/view
+            return [IsAdminUser()]  
+        return [IsAuthenticated()] 
 
     @action(detail=True, methods=['patch'], permission_classes=[IsAdminUser])
     def approve(self, request, pk=None):

@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group
-from django.contrib.auth import get_user_model  # Import the custom user model
+from django.contrib.auth import get_user_model 
 from rest_framework import permissions, viewsets
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,14 +10,14 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 from rest_framework import serializers
 
-# Fetch the custom user model
+
 User = get_user_model()
 
 class UserViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """
-    queryset = User.objects.all().order_by('-date_joined')  # Use the custom user model
+    queryset = User.objects.all().order_by('-date_joined') 
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -34,8 +34,8 @@ class GroupViewSet(viewsets.ModelViewSet):
 class SignUpView(viewsets.ViewSet):
     serializer_class = SignUpSerializer
     queryset = User.objects.all()
-    authentication_classes = []  # Disable authentication for this view
-    permission_classes = [AllowAny]  # Allow unauthenticated access
+    authentication_classes = [] 
+    permission_classes = [AllowAny] 
 
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -46,8 +46,8 @@ class SignUpView(viewsets.ViewSet):
 
 
 class SignInView(APIView):
-    authentication_classes = []  # Disable authentication for this view
-    permission_classes = [AllowAny]  # Allow unauthenticated access
+    authentication_classes = [] 
+    permission_classes = [AllowAny]  
     serializer_class = SignInSerializer
 
     def post(self, request):
